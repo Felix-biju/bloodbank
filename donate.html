@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Donation — Blood Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="index.html">
+        <span class="drop"><span>🩸</span></span>
+        BloodBank
+    </a>
+    <a href="index.html">Dashboard</a>
+    <a href="search.html">Search Donors</a>
+    <a href="donors.html">All Donors</a>
+    <div id="auth-links" style="display: contents;">
+        <!-- Auth links populated by db.js -->
+    </div>
+</nav>
+
+<main class="page">
+    <div class="page-header">
+        <h1>Record Blood Donation</h1>
+        <p>Log a new donation entry for an existing donor</p>
+    </div>
+
+    <div class="card" style="max-width: 500px; margin: 0 auto;">
+        <div class="card-body">
+            
+            <div id="alert-message" class="alert alert-success" style="display: none;"></div>
+
+            <form id="donate-form" class="form-grid">
+                
+                <div class="form-group full">
+                    <label for="donor_id">Select Donor</label>
+                    <select id="donor_id" name="donor_id" required>
+                        <option value="">-- Choose a Donor --</option>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+
+                <div class="form-group full">
+                    <label for="donation_date">Donation Date</label>
+                    <input type="date" id="donation_date" name="donation_date" required>
+                </div>
+
+                <div class="form-group full" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        <span class="icon">🩸</span> Save Donation Record
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Set max date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('donation_date').max = today;
+    document.getElementById('donation_date').value = today;
+
+    // Populate donors dropdown
+    const donors = getDonors();
+    const select = document.getElementById('donor_id');
+    donors.forEach(donor => {
+        const option = document.createElement('option');
+        option.value = donor.id;
+        option.textContent = `${donor.name} (${donor.blood_group}) - ${donor.phone}`;
+        select.appendChild(option);
+    });
+
+    document.getElementById('donate-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const donorId = document.getElementById('donor_id').value;
+        const dateStr = document.getElementById('donation_date').value;
+
+        addDonation(donorId, dateStr);
+
+        const alertMsg = document.getElementById('alert-message');
+        alertMsg.className = 'alert alert-success';
+        alertMsg.textContent = 'Donation recorded successfully!';
+        alertMsg.style.display = 'block';
+
+        document.getElementById('donate-form').reset();
+        document.getElementById('donation_date').value = today;
+    });
+});
+</script>
+
+</body>
+</html>

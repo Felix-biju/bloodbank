@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — Blood Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/db.js"></script>
+    <style>
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+        .login-card {
+            background: var(--bg-card);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-card h1 {
+            margin-bottom: 2rem;
+            color: var(--text-main);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.8rem;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: var(--login-btn-bg, #0056b3); /* Using CSS variable with fallback to blue */
+            color: white;
+            border: none;
+            border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+        .btn-login:hover {
+            background: var(--login-btn-hover, #004494);
+            transform: translateY(-2px);
+        }
+        .error-message {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--primary);
+            padding: 1rem;
+            border-radius: 0.8rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .register-link {
+            display: block;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--navy);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .register-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="index.html">
+        <span class="drop"><span>🩸</span></span>
+        BloodBank
+    </a>
+    <a href="index.html">Dashboard</a>
+    <a href="search.html">Search Donors</a>
+    <a href="donors.html">All Donors</a>
+    <div id="auth-links" style="display: contents;">
+        <a href="login.html" class="active">Login</a>
+    </div>
+</nav>
+
+<main class="page">
+    <div class="login-wrapper">
+        <div class="login-card card">
+            <h2>Admin Login</h2>
+            <br>
+            <div id="error-message" class="alert alert-error" style="display: none;"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn-login">Sign In</button>
+
+                <a href="register_admin.html" class="register-link">Register New Admin</a>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (login(username, password)) {
+            window.location.href = 'index.html';
+        } else {
+            const errDiv = document.getElementById('error-message');
+            errDiv.textContent = 'Invalid username or password.';
+            errDiv.style.display = 'block';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

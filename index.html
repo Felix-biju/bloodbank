@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Blood Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="index.html">
+        <span class="drop"><span>🩸</span></span>
+        BloodBank
+    </a>
+    <a href="index.html" class="active">Dashboard</a>
+    <a href="search.html">Search Donors</a>
+    <a href="donors.html">All Donors</a>
+    <div id="auth-links" style="display: contents;">
+        <!-- Auth links populated by db.js -->
+    </div>
+</nav>
+
+<main class="page">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p><span id="current-date"></span> — Blood Bank Management System</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card red">
+            <div class="label">Total Donors</div>
+            <div class="value" id="total-donors">0</div>
+        </div>
+        <div class="stat-card navy">
+            <div class="label">Total Donations</div>
+            <div class="value" id="total-donations">0</div>
+        </div>
+        <div class="stat-card green">
+            <div class="label">Eligible Now</div>
+            <div class="value" id="eligible-count">0</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="label">Donations Today</div>
+            <div class="value" id="today-donations">0</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title">⚡ Quick Actions</div>
+    <div class="quick-actions" style="margin-bottom:2.5rem" id="quick-actions-container">
+        <a href="search.html" class="action-card">
+            <span class="icon">🔍</span>
+            Search by Blood Group
+        </a>
+        <a href="donors.html" class="action-card">
+            <span class="icon">📋</span>
+            View All Donors
+        </a>
+        <!-- Admin actions populated via JS if logged in -->
+    </div>
+
+    <!-- Recent Donations -->
+    <div class="section-title">🕒 Recent Donations</div>
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Donor Name</th>
+                        <th>Blood Group</th>
+                        <th>Donation Date</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-donations-tbody">
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty">
+                                <div class="icon">📭</div>
+                                <p>Loading...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Set date
+    const dateOpts = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-GB', dateOpts);
+
+    // Get Data
+    const donors = getDonors();
+    const donations = getDonations();
+
+    // Stats
+    const totalDonors = donors.length;
+    const totalDonations = donations.length;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const todayDonations = donations.filter(d => d.donation_date === today).length;
+
+    // Eligible
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
+    let eligibleCount = 0;
+    donors.forEach(donor => {
+        const donorDonations = getDonationsByDonor(donor.id);
+        if (donorDonations.length === 0) {
+            eligibleCount++;
+        } else {
+            const lastDonationDate = new Date(donorDonations[0].donation_date);
+            if (lastDonationDate <= ninetyDaysAgo) {
+                eligibleCount++;
+            }
+        }
+    });
+
+    document.getElementById('total-donors').textContent = totalDonors;
+    document.getElementById('total-donations').textContent = totalDonations;
+    document.getElementById('today-donations').textContent = todayDonations;
+    document.getElementById('eligible-count').textContent = eligibleCount;
+
+    // Quick Actions
+    if (isLoggedIn()) {
+        document.getElementById('quick-actions-container').innerHTML += `
+            <a href="register.html" class="action-card">
+                <span class="icon">🧑‍🤝‍🧑</span>
+                Register New Donor
+            </a>
+            <a href="donate.html" class="action-card">
+                <span class="icon">🩸</span>
+                Record Donation
+            </a>
+        `;
+    }
+
+    // Recent Donations
+    const recent = [...donations].sort((a, b) => new Date(b.donation_date) - new Date(a.donation_date)).slice(0, 5);
+    const tbody = document.getElementById('recent-donations-tbody');
+    
+    if (recent.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3">
+                    <div class="empty">
+                        <div class="icon">📭</div>
+                        <p>No donations recorded yet.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        tbody.innerHTML = '';
+        recent.forEach(r => {
+            const donor = getDonorById(r.donor_id);
+            const dateStr = new Date(r.donation_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            if (donor) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${donor.name}</td>
+                        <td><span class="badge badge-blood">${donor.blood_group}</span></td>
+                        <td>${dateStr}</td>
+                    </tr>
+                `;
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

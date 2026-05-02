@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Donors — Blood Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="index.html">
+        <span class="drop"><span>🩸</span></span>
+        BloodBank
+    </a>
+    <a href="index.html">Dashboard</a>
+    <a href="search.html">Search Donors</a>
+    <a href="donors.html" class="active">All Donors</a>
+    <div id="auth-links" style="display: contents;">
+        <!-- Auth links populated by db.js -->
+    </div>
+</nav>
+
+<main class="page">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h1>All Donors</h1>
+            <p>Complete directory of registered blood donors</p>
+        </div>
+        <div id="register-btn-container">
+            <!-- Rendered via JS if admin logged in -->
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Blood Group</th>
+                        <th>Location</th>
+                        <th>Last Donation</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="donors-tbody">
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty">
+                                <div class="icon">📭</div>
+                                <p>Loading donors...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) {
+        document.getElementById('register-btn-container').innerHTML = `
+            <a href="register.html" class="btn btn-primary">➕ Register Donor</a>
+        `;
+    }
+
+    const donors = getDonors();
+    const tbody = document.getElementById('donors-tbody');
+
+    if (donors.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty">
+                        <div class="icon">📭</div>
+                        <p>No donors found in the database.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        tbody.innerHTML = '';
+        
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+        donors.forEach(donor => {
+            const donations = getDonationsByDonor(donor.id);
+            let lastDonationStr = 'Never';
+            let isEligible = true;
+
+            if (donations.length > 0) {
+                const lastDate = new Date(donations[0].donation_date);
+                lastDonationStr = lastDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                if (lastDate > ninetyDaysAgo) {
+                    isEligible = false;
+                }
+            }
+
+            let statusBadge = isEligible 
+                ? '<span class="badge badge-eligible">Eligible</span>' 
+                : '<span class="badge badge-not-eligible">Wait 90 Days</span>';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 600;">${donor.name}</td>
+                    <td><span class="badge badge-blood">${donor.blood_group}</span></td>
+                    <td>${donor.address}</td>
+                    <td>${lastDonationStr}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <a href="donor_detail.html?id=${donor.id}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Profile — Blood Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="index.html">
+        <span class="drop"><span>🩸</span></span>
+        BloodBank
+    </a>
+    <a href="index.html">Dashboard</a>
+    <a href="search.html">Search Donors</a>
+    <a href="donors.html">All Donors</a>
+    <div id="auth-links" style="display: contents;">
+        <!-- Auth links populated by db.js -->
+    </div>
+</nav>
+
+<main class="page">
+    <div class="page-header" style="display: flex; align-items: center; gap: 1rem;">
+        <a href="donors.html" class="btn btn-outline" style="padding: 0.5rem; border-radius: 50%;">
+            <span class="icon">←</span>
+        </a>
+        <div>
+            <h1>Donor Profile</h1>
+            <p>Detailed information and donation history</p>
+        </div>
+    </div>
+
+    <div id="not-found" class="empty" style="display: none;">
+        <div class="icon">🤷</div>
+        <p>Donor not found.</p>
+    </div>
+
+    <div id="donor-profile" style="display: none;">
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header" style="justify-content: space-between;">
+                <h2>Personal Information</h2>
+                <span id="donor-status"></span>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <div id="donor-name" style="font-weight: 600; font-size: 1.1rem;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <div id="donor-blood" style="margin-top: 0.2rem;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <div id="donor-age"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <div id="donor-gender"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <div id="donor-phone"></div>
+                    </div>
+                    <div class="form-group full">
+                        <label>Address / City</label>
+                        <div id="donor-address"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">🩸 Donation History</div>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Donation Date</th>
+                            <th>Days Ago</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donations-tbody">
+                        <tr>
+                            <td colspan="2">
+                                <div class="empty">
+                                    <p>Loading history...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const donorId = urlParams.get('id');
+
+    if (!donorId) {
+        document.getElementById('not-found').style.display = 'block';
+        return;
+    }
+
+    const donor = getDonorById(donorId);
+    if (!donor) {
+        document.getElementById('not-found').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('donor-profile').style.display = 'block';
+
+    document.getElementById('donor-name').textContent = donor.name;
+    document.getElementById('donor-blood').innerHTML = `<span class="badge badge-blood">${donor.blood_group}</span>`;
+    document.getElementById('donor-age').textContent = donor.age + ' years';
+    document.getElementById('donor-gender').textContent = donor.gender;
+    document.getElementById('donor-phone').textContent = donor.phone;
+    document.getElementById('donor-address').textContent = donor.address;
+
+    const donations = getDonationsByDonor(donorId);
+    
+    let isEligible = true;
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    if (donations.length > 0) {
+        const lastDate = new Date(donations[0].donation_date);
+        if (lastDate > ninetyDaysAgo) {
+            isEligible = false;
+        }
+    }
+
+    document.getElementById('donor-status').innerHTML = isEligible 
+        ? '<span class="badge badge-eligible">Eligible to Donate</span>' 
+        : '<span class="badge badge-not-eligible">Not Eligible Yet (Wait 90 Days)</span>';
+
+    const tbody = document.getElementById('donations-tbody');
+    if (donations.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="2">
+                    <div class="empty">
+                        <p>No donations recorded for this donor yet.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        tbody.innerHTML = '';
+        const today = new Date();
+        donations.forEach(d => {
+            const date = new Date(d.donation_date);
+            const diffTime = Math.abs(today - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 500;">${dateStr}</td>
+                    <td style="color: var(--muted);">${diffDays} days ago</td>
+                </tr>
+            `;
+        });
+    }
+});
+</script>
+
+</body>
+</html>

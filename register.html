@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Donor — Blood Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="index.html">
+        <span class="drop"><span>🩸</span></span>
+        BloodBank
+    </a>
+    <a href="index.html">Dashboard</a>
+    <a href="search.html">Search Donors</a>
+    <a href="donors.html">All Donors</a>
+    <div id="auth-links" style="display: contents;">
+        <!-- Auth links populated by db.js -->
+    </div>
+</nav>
+
+<main class="page">
+    <div class="page-header">
+        <h1>Register New Donor</h1>
+        <p>Enter details to add a new donor to the system</p>
+    </div>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-body">
+            
+            <div id="alert-message" class="alert alert-success" style="display: none;"></div>
+
+            <form id="register-donor-form" class="form-grid">
+                
+                <div class="form-group full">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" min="18" max="65" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="blood_group">Blood Group</label>
+                    <select id="blood_group" name="blood_group" required>
+                        <option value="">Select Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-group full">
+                    <label for="address">Address / City</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group full" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        <span class="icon">➕</span> Register Donor
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    document.getElementById('register-donor-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const donor = {
+            name: document.getElementById('name').value.trim(),
+            age: parseInt(document.getElementById('age').value),
+            gender: document.getElementById('gender').value,
+            blood_group: document.getElementById('blood_group').value,
+            phone: document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim()
+        };
+
+        const existingDonors = getDonors();
+        if (existingDonors.find(d => d.phone === donor.phone)) {
+            const alertMsg = document.getElementById('alert-message');
+            alertMsg.className = 'alert alert-error';
+            alertMsg.textContent = 'Phone number already registered to another donor.';
+            alertMsg.style.display = 'block';
+            return;
+        }
+
+        addDonor(donor);
+
+        const alertMsg = document.getElementById('alert-message');
+        alertMsg.className = 'alert alert-success';
+        alertMsg.textContent = 'Donor registered successfully!';
+        alertMsg.style.display = 'block';
+
+        document.getElementById('register-donor-form').reset();
+    });
+});
+</script>
+
+</body>
+</html>
