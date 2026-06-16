@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodBank Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container animate-fade">
+        <nav class="navbar glass-panel">
+            <div class="nav-brand">
+                🩸 <span>BloodBank</span> Hub
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="showView('donors')">Donors</button>
+                <button class="nav-btn" onclick="showView('search')">Search</button>
+                <button class="nav-btn" onclick="showView('register')">Register</button>
+            </div>
+        </nav>
+
+        <div class="glass-panel" style="padding: 2rem;">
+            
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view active animate-fade">
+                <h2 style="margin-bottom: 2rem;">Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <div class="stat-value" id="stat-total-donors">-</div>
+                        <div class="stat-label">Total Donors</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <div class="stat-value" id="stat-total-donations">-</div>
+                        <div class="stat-label">Total Donations</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <div class="stat-value" id="stat-today-donations">-</div>
+                        <div class="stat-label">Donations Today</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <div class="stat-value" id="stat-eligible">-</div>
+                        <div class="stat-label">Eligible to Donate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donors View -->
+            <div id="donors-view" class="view animate-fade">
+                <h2 style="margin-bottom: 1.5rem;">Donor Directory</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Group</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donors-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Search View -->
+            <div id="search-view" class="view animate-fade">
+                <h2 style="margin-bottom: 1.5rem;">Search Donors</h2>
+                <form id="search-form" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <select id="search-group" class="form-control" style="width: 200px;">
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                    <button type="submit" class="btn">Search</button>
+                </form>
+
+                <div class="table-container" id="search-results-container" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="search-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Register View -->
+            <div id="register-view" class="view animate-fade" style="max-width: 600px; margin: 0 auto;">
+                <h2 style="margin-bottom: 1.5rem; text-align: center;">Register New Donor</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input required type="text" id="reg-name" class="form-control">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Age</label>
+                            <input required type="number" min="18" max="65" id="reg-age" class="form-control">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Gender</label>
+                            <select id="reg-gender" class="form-control">
+                                <option>Male</option><option>Female</option><option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Blood Group</label>
+                            <select id="reg-blood" class="form-control">
+                                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                                <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input required type="tel" id="reg-phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea required id="reg-address" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Register Donor</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
